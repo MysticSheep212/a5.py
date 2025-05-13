@@ -29,12 +29,25 @@ chip_deduction = {
     8000: 4,
 }
 
+
 # Helper functions
 def printInBox(text):
     """Prints the text in a box"""
     print(f"+{'-' * (len(text) + 2)}+")
     print(f"| {text} |")
     print(f"+{'-' * (len(text) + 2)}+")
+
+def printDiceRoll(roll):
+    print(f"{player} rolled {player_rolls[player]}")
+    
+    for _ in range(5):
+        for i in range(3):
+            if i == 0 or i == 4:
+                print((" -----  ")*3)
+            else:
+                if i == roll[i] == 1:
+                print(f"| {roll[i]} |")
+        
 
 def calculate_score(roll):
     """Calculate the score for a given roll"""
@@ -48,11 +61,12 @@ def calculate_score(roll):
             score += num
     return score
 
+
 def roll_dice(num_rolls, player):
     """Rolls the dice for the player and returns the num of rolls"""
     roll = [random.randint(1, 6) for _ in range(3)]
     times_rolled = 1
-    
+
     while times_rolled < num_rolls:
         # Check if the roll is a special combination
         if roll in dice_ranks.values():
@@ -64,29 +78,64 @@ def roll_dice(num_rolls, player):
         # Stop rolling if the score is between 100 and 200
         if 200 > score > 100:
             break
-            
+
         dice_to_reroll = []
-        
-        # Check if dice should be rerolled
-        for i, die in enumerate(roll):
-            if die == 1 or die == 6:
-                continue
-            if roll.count(die) >= 2:
-                continue
-            dice_to_reroll.append(i)
+
+        if player == username:
+            print(f"Your Roll: {roll}")
+            deciding_rerolls = True
+            while deciding_rerolls == True:
+                reroll_choice = input("Do you want to reroll? (yes/no/all): ")
+
+                if reroll_choice == "all":
+                    # Reroll all dice
+                    dice_to_reroll = [0, 1, 2]
+                    deciding_rerolls = False
+                elif reroll_choice == "no":
+                    # Do not reroll
+                    dice_to_reroll = []
+                    deciding_rerolls = False
+                elif reroll_choice == "yes":
+                    # Ask which dice to reroll
+                    reroll_input = input(
+                        "Which dice would you like to reroll? (Enter di seperated by commas, e.g.1, 2, 3): "
+                    )
+                    dice_to_reroll = []
+                    for i in reroll_input.split(","):
+                        if (
+                            i.strip().isdigit()
+                        ):  # Checks validity of input, if its a number
+                            index = int(i.strip()) - 1  # Converts to zero-based index
+                            if 0 <= index <= 2:  # Ensures the index is valid
+                                dice_to_reroll.append(index)
+                    deciding_rerolls = False
+
+                else:
+                    print("Invalid input. Please try again.")
+        else:
+            # Check if dice should be rerolled for CPUS
+            for i, die in enumerate(roll):
+                if die == 1 or die == 6:
+                    continue
+                if roll.count(die) >= 2:
+                    continue
+                dice_to_reroll.append(i)
 
         for i in dice_to_reroll:
-            roll[i] = (random.randint(1, 6))
+            roll[i] = random.randint(1, 6)
 
         times_rolled += 1
 
-        if roll in dice_ranks.values():  # Check again if the roll is a special combination
+        if (
+            roll in dice_ranks.values()
+        ):  # Check again if the roll is a special combination
             break
 
     roll.sort()  # Sort the roll to make it easier to compare
     player_rolls[player] = roll
-    print(f"{player} rolled {player_rolls[player]}")
+    printDiceRoll(player_rolls[player])
     return times_rolled
+
 
 # Game setup
 printInBox("Welcome to PoCoLoCo!")
@@ -99,8 +148,9 @@ print(
 )
 
 # Ask the player for their name
-players[0] = input("\nWhat is your name?: ")
-
+players[0]
+username = input("\nWhat is your name?: ")
+players[0] = username
 chip_count = {
     # Define the chips for each player
     players[0]: 10,
@@ -144,7 +194,9 @@ while not found_winner:
     for player in player_rolls:
         player_rolls[player] = []
 
-    for player in player_rolls:
+    random.shuffle(players)
+    
+    for player in players:
         score = 0
 
         last_num_rolls = roll_dice(last_num_rolls, player)
@@ -164,7 +216,7 @@ while not found_winner:
         if score < low_score:
             low_score = score
             low_score_player = player
-        round += 1
+    round += 1
 
     # Determine how many chips to be taken from the winners
     if high_score in chip_deduction:
@@ -198,7 +250,7 @@ while not found_winner:
             winner = player
             found_winner = True
             break
-        
+
 # Endgame Logic
 if player_rolls[winner] in dice_ranks.values():
     if player_rolls[winner] == dice_ranks[1000]:
