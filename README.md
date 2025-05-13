@@ -1,2 +1,5 @@
-# a5
-Python Assignment 5 for Programming 12
+# Assignment 5 - PoCo Loco!
+Fifth and final python assignment for Programming 12
+
+Coding the PoCo Loco dice game from SFU
+
