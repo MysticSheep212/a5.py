@@ -127,7 +127,7 @@ def assemble_di(roll_value, roll):
     di.append(di_pieces["cap"])
 
     # Apply yellow colour if roll_value is 1 or 6
-    if roll_value in [1, 6]:
+    if roll_value in [1, 6] and roll not in special_combinations.values():
         di = [f"\033[33m{line}\033[0m" for line in di]  # Apply yellow to each line
 
     # Apply purple coloyr if roll is a special combination
@@ -174,27 +174,21 @@ def roll_dice(num_rolls, player):
         # Check if the roll is a special combination
         if roll in special_combinations.values():
             break
-
-        # Calculate the current score
-        score = calculate_score(player_rolls[player])
-
-        # Stop rolling if the score is between 100 and 200
-        if 200 > score > 100:
-            break
-
+        
         if player == username:
             # Player's turn
+            input("\nPress enter to roll the dice") # Wait for player to press Enter
             roll, done_rolling = handle_player_turn(roll)
         else:
             # CPU's turn
             roll = handle_cpu_turn(roll, player)
-
         times_rolled += 1
 
         # Check again if the roll is a special combination
         if roll in special_combinations.values():
             break
-
+    
+    roll.sort()
     player_rolls[player] = roll
     print_dice_roll(player_rolls[player])
     return times_rolled
@@ -205,8 +199,8 @@ def handle_player_turn(roll):
     print_dice_roll(roll)
     while True:
         reroll_choice = input("\nDo you want to reroll? (yes/no): ").strip().lower()
-        if reroll_choice == "no":
-            return roll, True  # Player chooses not to reroll
+        if reroll_choice == "no": # Player chooses not to reroll
+            return roll, True  
         elif reroll_choice == "yes":
             reroll_input = (
                 input(
@@ -219,7 +213,7 @@ def handle_player_turn(roll):
             if dice_to_reroll is not None:
                 for i in dice_to_reroll:
                     roll[i] = random.randint(1, 6)
-                return roll, True
+                return roll, False 
         else:
             print("Invalid input. Please try again.")
 
@@ -271,7 +265,7 @@ def parse_reroll_input(reroll_input):
     return None
 
 
-def tiebreaker(tied_players, range):
+def tiebreaker(tied_players, type):
     """Handles the tiebreaker for players with equal scores."""
     print("\nTiebreaker! The following players are tied: ")
     for player in tied_players:
@@ -285,11 +279,11 @@ def tiebreaker(tied_players, range):
             roll.append(random.randint(1, 6))
         tiebreaker_scores[player] = sum(roll)  # Sum of the 3 dice
 
-    if range == "high":  # Return winner, for those who both reach 0 chips
+    if type == "high":  # Return winner, for those who both reach 0 chips
         winner = max(tiebreaker_scores, key=tiebreaker_scores.get)
-    elif range == "low":  # Return loser, for tied scores
+    elif type == "low":  # Return loser, for tied scores
         winner = min(tiebreaker_scores, key=tiebreaker_scores.get)
-
+    return winner
 
 # Game introduction
 print_in_box("\033[32mWelcome to PoCoLoco!\033[0m")
@@ -339,7 +333,7 @@ while not found_winner:
     print_in_box("Round " + str(round + 1))
 
     # Awaits player input before continuing to the next round
-    input("\nPress enter to continue to the next round...")
+    input("\nPress enter to continue\n")
 
     # Reset high and low scores
     high_score = 0
@@ -358,7 +352,7 @@ while not found_winner:
     random.shuffle(players)
 
     for player in players:
-        time.sleep(0.5)
+        time.sleep(1)
         score = 0
 
         last_num_rolls = roll_dice(last_num_rolls, player)
@@ -402,11 +396,11 @@ while not found_winner:
 
     if win_type != "default":
         print(
-            f"\n\033[32m{high_score_player}\033[0m wins the round with a {win_type} and each player gives \033[31m{low_score_player}\033[0m {taken_chips // 3} chip(s)"
+            f"\n\033[32m{high_score_player}\033[0m wins the round with a {win_type} and each player gives \033[31m{low_score_player}\033[0m {taken_chips} chip(s)"
         )
     else:
         print(
-            f"\n\033[32m{high_score_player}\033[0m wins the round with a score of {high_score} and each player gives \033[31m{low_score_player}\033[0m {taken_chips // 3} chip(s)"
+            f"\n\033[32m{high_score_player}\033[0m wins the round with a score of {high_score} and each player gives \033[31m{low_score_player}\033[0m {taken_chips} chip(s)"
         )
 
     print_in_box(f"Chips after Round {round}:")
