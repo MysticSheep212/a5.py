@@ -183,10 +183,6 @@ def roll_dice(num_rolls, player):
             # CPU's turn
             roll = handle_cpu_turn(roll, player)
         times_rolled += 1
-
-        # Check again if the roll is a special combination
-        if roll in special_combinations.values():
-            break
     
     roll.sort()
     player_rolls[player] = roll
@@ -196,6 +192,7 @@ def roll_dice(num_rolls, player):
 
 def handle_player_turn(roll):
     """Handles the player's turn, including reroll decisions."""
+    roll.sort() # Assure the dice are sorted low to high
     print_dice_roll(roll)
     while True:
         reroll_choice = input("\nDo you want to reroll? (yes/no): ").strip().lower()
@@ -220,6 +217,7 @@ def handle_player_turn(roll):
 
 def handle_cpu_turn(roll, player):
     """Handles the CPU's turn, deciding which dice to reroll."""
+    roll.sort() # Assure the dice are sorted low to high
     print_dice_roll(roll)
     dice_to_reroll = []
     for i, die in enumerate(roll):
@@ -289,7 +287,7 @@ def tiebreaker(tied_players, type):
 print_in_box("\033[32mWelcome to PoCoLoco!\033[0m")
 print(
     "Rules: \n"
-    "  1. The first player can roll up to 3 dice \n"
+    "   1. The first player can roll up to 3 dice \n"
     "  2. Each roll, the player can choose to stop or to reroll up to 3 of their dice \n"
     "  3. The player with the lowest score gains chips from the other players \n"
     "  4. A tie is decided by each player rolling 3 dice \n"
@@ -297,8 +295,15 @@ print(
 )
 
 # Ask the player for their name
-players[0]
-username = input("\nWhat is your name?: ").strip().capitalize()
+while True:
+    try:
+        username = input("\nWhat is your name?: ").strip().capitalize()
+        if username == str(username):
+            
+            ### WORK FROM HERE ###
+            
+            
+            
 players[0] = username
 chip_count = {
     # Define the chips for each player
@@ -318,7 +323,16 @@ player_rolls = {
 
 
 # Ask the player for the number of chips everyone starts with
-num_chips = int(input("\nHow many chips do you want to start with?: "))
+while True:
+    try:
+        num_chips = int(input("\nHow many chips do you want to start with?: "))
+        if num_chips > 0: # Checks if the number of chips is positive
+            break
+        else: # If num_chips is not positive, asks for the player to enter a positive number
+            print("\nInvalid input. Please enter a positive number.")
+    except ValueError:
+        print("\nInvalid input. Please enter a number.")
+        
 for player in chip_count.keys():
     chip_count[player] = num_chips
 
@@ -426,9 +440,9 @@ while not found_winner:
             break
     if len(winner) > 1:
         winner = tiebreaker(winner, "high")
-
+    str_winner = "".join(winner)
 # Printing the final results
-print_in_box(f"\033[32m{winner}\033[0m wins the game by reaching 0 chips!")
+print_in_box(f"\033[32m{str_winner}\033[0m wins the game by reaching 0 chips!")
 print_in_box(
     f"\033[31m{low_score_player}\033[0m loses the game with {chip_count[low_score_player]} chips!"
 )
