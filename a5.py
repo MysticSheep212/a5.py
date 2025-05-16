@@ -174,16 +174,16 @@ def roll_dice(num_rolls, player):
         # Check if the roll is a special combination
         if roll in special_combinations.values():
             break
-        
+
         if player == username:
             # Player's turn
-            input("\nPress enter to roll the dice") # Wait for player to press Enter
+            input("\nPress enter to roll your dice")  # Wait for player to press Enter
             roll, done_rolling = handle_player_turn(roll)
         else:
             # CPU's turn
             roll = handle_cpu_turn(roll, player)
         times_rolled += 1
-    
+
     roll.sort()
     player_rolls[player] = roll
     print_dice_roll(player_rolls[player])
@@ -192,12 +192,12 @@ def roll_dice(num_rolls, player):
 
 def handle_player_turn(roll):
     """Handles the player's turn, including reroll decisions."""
-    roll.sort() # Assure the dice are sorted low to high
+    roll.sort()  # Assure the dice are sorted low to high
     print_dice_roll(roll)
     while True:
         reroll_choice = input("\nDo you want to reroll? (yes/no): ").strip().lower()
-        if reroll_choice == "no": # Player chooses not to reroll
-            return roll, True  
+        if reroll_choice == "no":  # Player chooses not to reroll
+            return roll, True
         elif reroll_choice == "yes":
             reroll_input = (
                 input(
@@ -210,14 +210,14 @@ def handle_player_turn(roll):
             if dice_to_reroll is not None:
                 for i in dice_to_reroll:
                     roll[i] = random.randint(1, 6)
-                return roll, False 
+                return roll, False
         else:
             print("Invalid input. Please try again.")
 
 
 def handle_cpu_turn(roll, player):
     """Handles the CPU's turn, deciding which dice to reroll."""
-    roll.sort() # Assure the dice are sorted low to high
+    roll.sort()  # Assure the dice are sorted low to high
     print_dice_roll(roll)
     dice_to_reroll = []
     for i, die in enumerate(roll):
@@ -283,6 +283,7 @@ def tiebreaker(tied_players, type):
         winner = min(tiebreaker_scores, key=tiebreaker_scores.get)
     return winner
 
+
 # Game introduction
 print_in_box("\033[32mWelcome to PoCoLoco!\033[0m")
 print(
@@ -296,14 +297,17 @@ print(
 
 # Ask the player for their name
 while True:
+    # While loop allows to take input until a valid name is entered
     try:
         username = input("\nWhat is your name?: ").strip().capitalize()
-        if username == str(username):
-            
-            ### WORK FROM HERE ###
-            
-            
-            
+        if username == str(username) and username != "":
+            break
+        else:
+            print("\nInvalid input. Please enter a name.")
+    except ValueError:
+        print("\nInvalid input. Please enter a name.")
+
+
 players[0] = username
 chip_count = {
     # Define the chips for each player
@@ -324,15 +328,16 @@ player_rolls = {
 
 # Ask the player for the number of chips everyone starts with
 while True:
+    # While loop allows to take input until a valid number is entered
     try:
         num_chips = int(input("\nHow many chips do you want to start with?: "))
-        if num_chips > 0: # Checks if the number of chips is positive
+        if num_chips > 0:  # Checks if the number of chips is positive
             break
-        else: # If num_chips is not positive, asks for the player to enter a positive number
+        else:  # If num_chips is not positive, asks for the player to enter a positive number
             print("\nInvalid input. Please enter a positive number.")
     except ValueError:
         print("\nInvalid input. Please enter a number.")
-        
+
 for player in chip_count.keys():
     chip_count[player] = num_chips
 
@@ -347,7 +352,7 @@ while not found_winner:
     print_in_box("Round " + str(round + 1))
 
     # Awaits player input before continuing to the next round
-    input("\nPress enter to continue\n")
+    input("Press enter to begin the round\n")
 
     # Reset high and low scores
     high_score = 0
