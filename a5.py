@@ -288,7 +288,7 @@ def tiebreaker(tied_players, type):
 print_in_box("\033[32mWelcome to PoCoLoco!\033[0m")
 print(
     "Rules: \n"
-    "   1. The first player can roll up to 3 dice \n"
+    "  1. The first player can roll up to 3 dice \n"
     "  2. Each roll, the player can choose to stop or to reroll up to 3 of their dice \n"
     "  3. The player with the lowest score gains chips from the other players \n"
     "  4. A tie is decided by each player rolling 3 dice \n"
@@ -438,7 +438,7 @@ while not found_winner:
             print(f"{player} has {chips} chips (-\033[32m{taken_chips}\033[0m)")
 
     winner = []
-    for player in chip_count:
+    for player in chip_count.keys():
         if chip_count[player] <= 0:
             winner.append(player)
             found_winner = True
