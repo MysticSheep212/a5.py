@@ -171,9 +171,6 @@ def roll_dice(num_rolls, player):
     done_rolling = False
 
     while not done_rolling and times_rolled < num_rolls:
-        # Check if the roll is a special combination
-        if roll in special_combinations.values():
-            break
 
         if player == username:
             # Player's turn
@@ -181,12 +178,13 @@ def roll_dice(num_rolls, player):
             roll, done_rolling = handle_player_turn(roll)
         else:
             # CPU's turn
-            roll = handle_cpu_turn(roll, player)
+            roll, done_rolling = handle_cpu_turn(roll, player)
         times_rolled += 1
 
     roll.sort()
     player_rolls[player] = roll
-    print_dice_roll(player_rolls[player])
+    print(f"\n{player}'s Final Roll:")
+    print_dice_roll(roll)
     return times_rolled
 
 
@@ -220,7 +218,12 @@ def handle_cpu_turn(roll, player):
     roll.sort()  # Assure the dice are sorted low to high
     print_dice_roll(roll)
     dice_to_reroll = []
+    
+    if roll in special_combinations.values():
+        return roll, True
+    
     for i, die in enumerate(roll):
+        dice_to_reroll = []
         # CPU logic: reroll dice that are not 1 or 6 and are not part of a pair
         if die not in [1, 6] and roll.count(die) < 2:
             dice_to_reroll.append(i)
@@ -237,16 +240,18 @@ def handle_cpu_turn(roll, player):
             if reroll_string:
                 reroll_string += ", "
             reroll_string += str(index)
-
-        print(f"\n{player} rerolls: {reroll_string}")
+            
+        print(f"\n{player} rerolls {reroll_string}")
+        
+        for i in dice_to_reroll:
+            roll[i] = random.randint(1, 6)
+        return roll, False
     else:
-        print(f"\n{player} is done rolling")
-    for i in dice_to_reroll:
-        roll[i] = random.randint(1, 6)
-    return roll
+        return roll, True
 
 
 def parse_reroll_input(reroll_input):
+    
     """Parses the player's reroll input and returns a valid list of dice indices to reroll."""
     if reroll_input == "all":
         return [0, 1, 2]
@@ -308,7 +313,8 @@ while True:
         print("\nInvalid input. Please enter a name.")
 
 
-players[0] = username
+players[0] = username # Sets the player's name
+
 chip_count = {
     # Define the chips for each player
     players[0]: 10,
