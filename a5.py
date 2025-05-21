@@ -163,95 +163,108 @@ def check_win_type(score):
     return win_type
 
 
-def roll_dice(num_rolls, player):
+def roll_dice(remaining_rolls, player):
     """Rolls the dice for the player and returns the number of rolls."""
     roll = [random.randint(1, 6) for _ in range(3)]
     roll.sort()  # Sort the dice in ascending order
     times_rolled = 1
     done_rolling = False
 
-    while not done_rolling and times_rolled < num_rolls:
+    while not done_rolling:
 
         if player == username:
             # Player's turn
             input("\nPress enter to roll your dice")  # Wait for player to press Enter
-            roll, done_rolling = handle_player_turn(roll)
+            roll, done_rolling, times_rolled = handle_player_turn(roll, remaining_rolls)
         else:
             # CPU's turn
-            roll, done_rolling = handle_cpu_turn(roll, player)
-        times_rolled += 1
+            roll, done_rolling, times_rolled = handle_cpu_turn(
+                roll, player, remaining_rolls
+            )
 
     roll.sort()
     player_rolls[player] = roll
-    print(f"\n{player}'s Final Roll:")
-    print_dice_roll(roll)
+    print(f"    That was {player}'s Final Roll.")
     return times_rolled
 
 
-def handle_player_turn(roll):
+def handle_player_turn(roll, remaining_rolls):
     """Handles the player's turn, including reroll decisions."""
     roll.sort()  # Assure the dice are sorted low to high
     print_dice_roll(roll)
-    while True:
-        reroll_choice = input("\nDo you want to reroll? (yes/no): ").strip().lower()
-        if reroll_choice == "no":  # Player chooses not to reroll
-            return roll, True
-        elif reroll_choice == "yes":
-            reroll_input = (
-                input(
-                    "\nWhich dice would you like to reroll? (Enter choice(s) separated by commas, e.g., 1, 2, 3 or 'all'): "
+    rolls_taken = 1
+    if remaining_rolls == 1:
+        print("\nYou have no remaining rolls")
+        return roll, True, rolls_taken
+    else:
+        while rolls_taken < remaining_rolls:
+            reroll_choice = input("\nDo you want to reroll? (yes/no): ").strip().lower()
+            if reroll_choice == "no":  # Player chooses not to reroll
+                return roll, True, rolls_taken
+            elif reroll_choice == "yes":
+                reroll_input = (
+                    input(
+                        "\nWhich dice would you like to reroll? (Enter choice(s) separated by commas, e.g., 1, 2, 3 or 'all'): "
+                    )
+                    .strip()
+                    .lower()
                 )
-                .strip()
-                .lower()
-            )
-            dice_to_reroll = parse_reroll_input(reroll_input)
-            if dice_to_reroll is not None:
-                for i in dice_to_reroll:
-                    roll[i] = random.randint(1, 6)
-                return roll, False
-        else:
-            print("Invalid input. Please try again.")
+                dice_to_reroll = parse_reroll_input(reroll_input)
+                if dice_to_reroll is not None:
+                    for i in dice_to_reroll:
+                        roll[i] = random.randint(1, 6)
+                    return roll, False, rolls_taken
+            else:
+                print("Invalid input. Please try again.")
+            rolls_taken += 1
+        return roll, True, rolls_taken
 
 
-def handle_cpu_turn(roll, player):
+def handle_cpu_turn(roll, player, remaining_rolls):
     """Handles the CPU's turn, deciding which dice to reroll."""
     roll.sort()  # Assure the dice are sorted low to high
     print_dice_roll(roll)
     dice_to_reroll = []
-    
-    if roll in special_combinations.values():
-        return roll, True
-    
-    for i, die in enumerate(roll):
-        dice_to_reroll = []
-        # CPU logic: reroll dice that are not 1 or 6 and are not part of a pair
-        if die not in [1, 6] and roll.count(die) < 2:
-            dice_to_reroll.append(i)
+    rolls_taken = 1
+    print(f"{player} can roll {remaining_rolls} more time(s)")
+    while (
+        rolls_taken < remaining_rolls
+    ):  # Allows CPU to roll until their rolls match the remaining rolls
 
-    if dice_to_reroll:
-        # Convert 0-based index to 1-based for simpler output
-        reroll_indices = []
-        for i in dice_to_reroll:
-            reroll_indices.append(i + 1)
+        if roll in special_combinations.values():
+            return roll, True, rolls_taken
 
-        # Create a string with the index of the rerolled dice
-        reroll_string = ""
-        for index in reroll_indices:
-            if reroll_string:
-                reroll_string += ", "
-            reroll_string += str(index)
-            
-        print(f"\n{player} rerolls {reroll_string}")
-        
-        for i in dice_to_reroll:
-            roll[i] = random.randint(1, 6)
-        return roll, False
-    else:
-        return roll, True
+        for i, die in enumerate(roll):
+            dice_to_reroll = []
+            # CPU logic: reroll dice that are not 1 or 6 and are not part of a pair
+            if die not in [1, 6] and roll.count(die) < 2:
+                dice_to_reroll.append(i)
+
+        if dice_to_reroll:
+            # Convert 0-based index to 1-based for simpler output
+            reroll_indices = []
+            for i in dice_to_reroll:
+                reroll_indices.append(i + 1)
+
+            # Create a string with the index of the rerolled dice
+            reroll_string = ""
+            for index in reroll_indices:
+                if reroll_string:
+                    reroll_string += ", "
+                reroll_string += str(index)
+
+            print(f"\n{player} rerolls {reroll_string}")
+
+            for i in dice_to_reroll:
+                roll[i] = random.randint(1, 6)
+            rolls_taken += 1
+            return roll, False, rolls_taken
+        else:
+            return roll, True, rolls_taken
+    return roll, True, rolls_taken
 
 
 def parse_reroll_input(reroll_input):
-    
     """Parses the player's reroll input and returns a valid list of dice indices to reroll."""
     if reroll_input == "all":
         return [0, 1, 2]
@@ -313,7 +326,7 @@ while True:
         print("\nInvalid input. Please enter a name.")
 
 
-players[0] = username # Sets the player's name
+players[0] = username  # Sets the player's name
 
 chip_count = {
     # Define the chips for each player
@@ -377,7 +390,7 @@ while not found_winner:
     random.shuffle(players)
 
     for player in players:
-        time.sleep(1)
+        time.sleep(2)
         score = 0
 
         last_num_rolls = roll_dice(last_num_rolls, player)
