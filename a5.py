@@ -184,7 +184,7 @@ def roll_dice(remaining_rolls, player):
 
     roll.sort()
     player_rolls[player] = roll
-    print(f"    That was {player}'s Final Roll.")
+    print(f"\nThat was {player}'s final roll.")
     return times_rolled
 
 
@@ -193,7 +193,7 @@ def handle_player_turn(roll, remaining_rolls):
     roll.sort()  # Assure the dice are sorted low to high
     print_dice_roll(roll)
     rolls_taken = 1
-    if remaining_rolls == 1:
+    if remaining_rolls == 0:
         print("\nYou have no remaining rolls")
         return roll, True, rolls_taken
     else:
@@ -226,7 +226,8 @@ def handle_cpu_turn(roll, player, remaining_rolls):
     print_dice_roll(roll)
     dice_to_reroll = []
     rolls_taken = 1
-    print(f"{player} can roll {remaining_rolls} more time(s)")
+    if (remaining_rolls - 1) != 0: # Only print remaining rolls if there are any
+        print(f"{player} can roll {remaining_rolls-1} more time(s)")
     while (
         rolls_taken < remaining_rolls
     ):  # Allows CPU to roll until their rolls match the remaining rolls
@@ -253,7 +254,7 @@ def handle_cpu_turn(roll, player, remaining_rolls):
                     reroll_string += ", "
                 reroll_string += str(index)
 
-            print(f"\n{player} rerolls {reroll_string}")
+            print(f"\n{player} rerolls the following dice:  {reroll_string}")
 
             for i in dice_to_reroll:
                 roll[i] = random.randint(1, 6)
